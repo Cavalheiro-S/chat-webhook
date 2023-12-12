@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  database:
+    image: postgres:latest
+    container_name: chat-webhook
+    environment:
+      POSTGRES_DB: chat-webhook
+      POSTGRES_USER: chat
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5432:5432"
+    volumes:
+      - /var/lib/postgresql/data
