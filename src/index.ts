@@ -1,6 +1,8 @@
 import cors from 'cors';
 import express from 'express';
 import { Server } from 'socket.io';
+import { prisma } from '../prisma';
+import { authRoutes } from './routes/auth';
 
 const app = express()
 const io = new Server(3002, {
@@ -9,11 +11,9 @@ const io = new Server(3002, {
         methods: ["GET", "POST"]
     }
 })
+app.use(express.json())
 app.use(cors())
-
-app.get("/", (req, res) => {
-    res.send("Hello")
-})
+app.use("/auth", authRoutes)
 
 io.on("connection", (socket) => {
     console.log("a user connected")
