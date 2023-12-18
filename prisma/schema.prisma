@@ -32,12 +32,14 @@ model Chat {
 }
 
 model Friend {
-  id        String  @id @default(cuid())
-  name      String
-  userOne   User    @relation(name: "FriendOne", fields: [userOneId], references: [id])
-  userTwo   User    @relation(name: "FriendTwo", fields: [userTwoId], references: [id])
+  id        String   @id @default(cuid())
+  userOne   User     @relation(name: "FriendOne", fields: [userOneId], references: [id])
+  userTwo   User     @relation(name: "FriendTwo", fields: [userTwoId], references: [id])
   userOneId String
   userTwoId String
+  updatedAt DateTime @updatedAt()
+  createdAt DateTime @default(now())
 
+  @@unique([userOneId, userTwoId])
   @@map("friends")
 }

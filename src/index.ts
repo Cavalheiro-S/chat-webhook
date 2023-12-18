@@ -1,8 +1,8 @@
 import cors from 'cors';
 import express from 'express';
 import { Server } from 'socket.io';
-import { prisma } from '../prisma';
 import { authRoutes } from './routes/auth';
+import { friendRoutes } from './routes/friend';
 
 const app = express()
 const io = new Server(3002, {
@@ -11,14 +11,16 @@ const io = new Server(3002, {
         methods: ["GET", "POST"]
     }
 })
-app.use(express.json())
 app.use(cors())
+app.use(express.json())
 app.use("/auth", authRoutes)
+app.use("/friend", friendRoutes)
 
 io.on("connection", (socket) => {
-    console.log("a user connected")
     socket.on("chat message", (msg) => {
-        console.log("message: " + msg)
+        console.log("message:")
+        console.log(msg);
+        
     })
 })
 
