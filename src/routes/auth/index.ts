@@ -23,5 +23,8 @@ authRoutes.post("/login", async (req, res) => {
             password: user.password
         }
     })
-    res.json(userCreated)
+    if (!userCreated)
+        res.status(400).json({ message: "User not exist" })
+    else
+        res.status(200).json(userCreated)
 })
