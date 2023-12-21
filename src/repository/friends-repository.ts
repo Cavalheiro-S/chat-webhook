@@ -17,7 +17,8 @@ export class FriendsRepository {
 
             select: {
                 userOne: true,
-                userTwo: true
+                userTwo: true,
+                Chat: true
             }
         })
 
@@ -28,20 +29,31 @@ export class FriendsRepository {
                 id: {
                     in: friendIds
                 }
-            }
+            },
         })
 
-        return friends
+        return friends.map(friend => {
+            return {
+                ...friend,
+                chatId: users.find((user) => user.userOne.id === friend.id || user.userTwo.id === friend.id)?.Chat?.id
+            }
+        })
     }
 
-    async addFriend(userId: string, friendId: string) {
-        const { createdAt } = await prisma.friend.create({
+    async addFriend(userOneId: string, userTwoId: string) {
+        const { createdAt, id } = await prisma.friend.create({
             data: {
-                userOneId: userId,
-                userTwoId: friendId,
+                userOneId: userOneId,
+                userTwoId: userTwoId,
             }
         })
 
-        return { createdAt }
+        await prisma.chat.create({
+            data: {
+                name: `Chat with ${userTwoId}`,
+                friendId: id
+            }
+        })
+        return { createdAt, friendId: id }
     }
 }
