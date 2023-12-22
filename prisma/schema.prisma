@@ -11,12 +11,13 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   name      String
   password  String
   email     String
-  FriendOne Friend[] @relation(name: "FriendOne")
-  FriendTwo Friend[] @relation(name: "FriendTwo")
+  FriendOne Friend[]  @relation(name: "FriendOne")
+  FriendTwo Friend[]  @relation(name: "FriendTwo")
+  Message   Message[]
 
   @@map("users")
 }
@@ -32,10 +33,12 @@ model Chat {
 }
 
 model Message {
-  id     String @id @default(cuid())
-  text   String
-  chatId String
-  Chat   Chat   @relation(fields: [chatId], references: [id])
+  id        String   @id @default(cuid())
+  text      String
+  chatId    String
+  userId    String
+  Chat      Chat     @relation(fields: [chatId], references: [id])
+  User      User     @relation(fields: [userId], references: [id])
   updatedAt DateTime @updatedAt()
   createdAt DateTime @default(now())
 

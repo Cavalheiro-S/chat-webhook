@@ -19,9 +19,14 @@ export class ChatRepository {
             include: {
                 messages: {
                     select: {
-                        text: true
+                        text: true,
+                        userId: true,
+                        createdAt: true
                     },
-                    take: 4
+                    take: 4,
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
                 }
             }
         })
@@ -29,13 +34,14 @@ export class ChatRepository {
     }
 
 
-    async createMessage(chatId: string, text: string) {
+    async createMessage(userId: string, chatId: string, text: string) {
 
         const message = await prisma.message.create({
             data: {
                 text,
-                chatId
-            }
+                chatId,
+                userId
+            },
         })
         return message
     }

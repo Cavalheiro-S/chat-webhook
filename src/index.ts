@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import { authRoutes } from './routes/auth';
 import { friendRoutes } from './routes/friend';
 import { ChatRepository } from './repository/chat-repository';
+import { chatRoutes } from './routes/chat';
 
 const app = express()
 const io = new Server(3002, {
@@ -16,24 +17,29 @@ app.use(cors())
 app.use(express.json())
 app.use("/auth", authRoutes)
 app.use("/friend", friendRoutes)
-
+app.use("/chat", chatRoutes)
 const chatRepository = new ChatRepository();
 
 io.on("connection", (socket) => {
-    socket.on("join", async (userId: string) => {
+
+    socket.on("join-room", async userId => {
         const chat = await chatRepository.getChatsByUserId(userId)
-        socket.join("chat-" + chat?.id)
-        io.to("chat-" + chat?.id).emit("chat-" + chat?.id, { message: "user joined" })
+        if (!chat) {
+            return
+        }
+        socket.join(chat.id)
+        console.log(`User ${userId} joined room ${chat.id}`);
     })
-    // socket.on("chat message", async ({ message, userId }) => {
-    //     console.log(message, userId);
-    //     const chat = await chatRepository.getChatsByUserId(userId)
-    //     if (!chat) {
-    //         return socket.emit("error", { message: "Chat not found" })
-    //     }
-    //     const messageCreated = await chatRepository.createMessage(chat.id, message)
-    //     io.emit("chat message", messageCreated)
-    // })
+
+    socket.on("send-message", async ({ userId, message, room }) => {
+        if (room) {
+            const messageCreated = await chatRepository.createMessage(userId, room, message)
+            console.log(`Message sent to room ${room}`);
+            io.to(room).emit("receive-message", messageCreated)
+        } else {
+            socket.broadcast.emit("receive-message", message)
+        }
+    })
 })
 
 
