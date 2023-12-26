@@ -22,20 +22,29 @@ const chatRepository = new ChatRepository();
 
 io.on("connection", (socket) => {
 
-    socket.on("join-room", async userId => {
-        const chat = await chatRepository.getChatsByUserId(userId)
+    socket.on("join-room", async ({ userOneId, userTwoId }) => {
+        const chat = await chatRepository.getChatByUserId(userOneId, userTwoId)
         if (!chat) {
             return
         }
         socket.join(chat.id)
-        console.log(`User ${userId} joined room ${chat.id}`);
+        socket.emit("previous-messages", chat.messages)
+        console.log(`User ${userOneId} joined room ${chat.id}`);
     })
 
-    socket.on("send-message", async ({ userId, message, room }) => {
-        if (room) {
-            const messageCreated = await chatRepository.createMessage(userId, room, message)
-            console.log(`Message sent to room ${room}`);
-            io.to(room).emit("receive-message", messageCreated)
+    socket.on("leave-room", async chatId => {
+        socket.leave(chatId)
+    })
+
+    socket.on("send-message", async ({ userOneId, friendId, message }) => {
+        const chat = await chatRepository.getChatByUserId(userOneId, friendId)
+        if (!chat)
+            return
+        const messageCreated = await chatRepository.createMessage(userOneId, chat.id, message)
+        console.log(`Message sent to room ${chat.id}`);
+        io.to(chat.id).emit("receive-message", messageCreated)
+        if (chat.id) {
+
         } else {
             socket.broadcast.emit("receive-message", message)
         }

@@ -2,16 +2,18 @@ import { prisma } from "../../prisma"
 
 
 export class ChatRepository {
-    async getChatsByUserId(userId: string) {
+    async getChatByUserId(userOneId: string, userTwoId: string) {
         const chat = await prisma.chat.findFirst({
             where: {
                 friend: {
                     OR: [
                         {
-                            userOneId: userId
+                            userOneId: userOneId,
+                            userTwoId: userTwoId
                         },
                         {
-                            userTwoId: userId
+                            userOneId: userTwoId,
+                            userTwoId: userOneId
                         }
                     ]
                 }
