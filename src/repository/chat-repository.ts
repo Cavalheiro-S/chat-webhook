@@ -21,13 +21,13 @@ export class ChatRepository {
             include: {
                 messages: {
                     select: {
+                        id: true,
                         text: true,
                         userId: true,
                         createdAt: true
                     },
-                    take: 4,
                     orderBy: {
-                        createdAt: 'desc'
+                        createdAt: 'asc'
                     }
                 }
             }
@@ -36,12 +36,28 @@ export class ChatRepository {
     }
 
 
-    async createMessage(userId: string, chatId: string, text: string) {
-
+    async createMessage(userId: string, friendId: string, text: string) {
+        const chat = await prisma.chat.findFirst({
+            where: {
+                friend: {
+                    OR: [
+                        {
+                            userOneId: userId,
+                            userTwoId: friendId
+                        },
+                        {
+                            userOneId: friendId,
+                            userTwoId: userId
+                        }
+                    ]
+                }
+            }
+        })
+        if (!chat) return;
         const message = await prisma.message.create({
             data: {
                 text,
-                chatId,
+                chatId: chat.id,
                 userId
             },
         })
